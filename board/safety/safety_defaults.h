@@ -27,7 +27,7 @@ static int default_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   int bus_fwd = -1;
   // CAN1 to CAN3
   if (bus_num == 0) {
-    bus_fwd = 2
+    bus_fwd = 2;
   }
   /*
   if(bus_num == 0){
