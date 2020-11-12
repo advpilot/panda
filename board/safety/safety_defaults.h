@@ -1,3 +1,13 @@
+void mdps_spoof_speed(CAN_FIFOMailBox_TypeDef *to_fwd){
+  bool mph_speed = GET_BYTE(to_fwd, 2) & 0x2;
+  int enable_speed = mph_speed ? 38 : 60;
+  int speed = (GET_BYTE(to_fwd, 1) | (GET_BYTE(to_fwd, 2) & 0x1) << 8) * 0.5;
+  if (speed < enable_speed) {
+    to_fwd->RDLR &= 0xFFFE00FF;
+    to_fwd->RDLR |= (enable_speed * 2) << 8;
+  }
+};
+
 void default_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
   UNUSED(to_push);
 }
@@ -22,51 +32,20 @@ static int nooutput_tx_lin_hook(int lin_num, uint8_t *data, int len) {
 }
 
 static int default_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
-  // UNUSED(bus_num);
   UNUSED(to_fwd);
   int bus_fwd = -1;
   // CAN1 to CAN3
   if (bus_num == 0) {
     bus_fwd = 2;
-  }
-  /*
-  if(bus_num == 0){
-    // create a timer and measure elapsed time
-    uint32_t ts = TIM2->CNT;
-    uint32_t ts_elapsed = get_ts_elapsed(ts, eon_detected_last);
-    // reset blocking flag if time since we saw the Eon exceeds limit
-    if (ts_elapsed > 250000) {
-      block = 0;
-    }
-    // do we see the Eon?
-    if(addr == 0x343){
-      block = 1;
-      eon_detected_last = ts;
-    }
-    bus_fwd = 2;
-  }
-  if(bus_num == 2){
-    // lock rate to stock 0x343. better have a working DSU!
-    if (addr == 0x343){
-      button_state = (GET_BYTE(to_fwd, 2) >> 4U);
-      send_id(button_state);
-    }
-    // block cruise message only if it's already being sent on bus 0
-    if(!onboot){
-      startedtime = TIM2->CNT;
-      onboot = 1;
-    }
-    // DSU normally sends nothing for 2 sec, causing the cruise fault so spam the fake msg
-    boot_done = (TIM2->CNT > (startedtime + 2000000));
-    if (!boot_done){
-      send_spoof_acc();
-    }
-    int blockmsg = (block | !boot_done) && (addr == 0x343);
-    if(!blockmsg){
-      bus_fwd = 0;
+    // modify speed
+    if (addr == 1265) {
+      mdps_spoof_speed(to_fwd);
     }
   }
-  */
+  // CAN3 to CAN1
+  if (bus_num == 2) {
+    bus_fwd = 0;
+  }
   return bus_fwd;
 }
 
