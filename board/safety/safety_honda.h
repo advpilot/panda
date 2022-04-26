@@ -256,7 +256,7 @@ static int honda_tx_hook(CANPacket_t *to_send, bool longitudinal_allowed) {
 
   // disallow actuator commands if gas or brake (with vehicle moving) are pressed
   // and the the latching controls_allowed flag is True
-  int pedal_pressed = brake_pressed_prev && vehicle_moving;
+  int pedal_pressed = 0; //brake_pressed_prev && vehicle_moving;
   bool alt_exp_allow_gas = alternative_experience & ALT_EXP_DISABLE_DISENGAGE_ON_GAS;
   if (!alt_exp_allow_gas) {
     pedal_pressed = pedal_pressed || gas_pressed_prev;
@@ -408,9 +408,9 @@ static int honda_nidec_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
     // block stock lkas messages and stock acc messages (if OP is doing ACC)
     int addr = GET_ADDR(to_fwd);
     bool is_lkas_msg = (addr == 0xE4) || (addr == 0x194) || (addr == 0x33D);
-    bool is_acc_hud_msg = addr == 0x30C;
-    bool is_brake_msg = addr == 0x1FA;
-    bool block_fwd = is_lkas_msg || is_acc_hud_msg || (is_brake_msg && !honda_fwd_brake);
+//    bool is_acc_hud_msg = addr == 0x30C;
+//    bool is_brake_msg = addr == 0x1FA;
+    bool block_fwd = is_lkas_msg; // || is_acc_hud_msg || (is_brake_msg && !honda_fwd_brake);
     if (!block_fwd) {
       bus_fwd = 0;
     }

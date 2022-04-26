@@ -305,13 +305,14 @@ static int hyundai_tx_hook(CANPacket_t *to_send, bool longitudinal_allowed) {
       violation |= max_limit_check(desired_torque, HYUNDAI_MAX_STEER, -HYUNDAI_MAX_STEER);
 
       // *** torque rate limit check ***
+      #if 0
       violation |= driver_limit_check(desired_torque, desired_torque_last, &torque_driver,
         HYUNDAI_MAX_STEER, HYUNDAI_MAX_RATE_UP, HYUNDAI_MAX_RATE_DOWN,
         HYUNDAI_DRIVER_TORQUE_ALLOWANCE, HYUNDAI_DRIVER_TORQUE_FACTOR);
-
+      #endif
       // used next time
       desired_torque_last = desired_torque;
-
+      #if 0
       // *** torque real time rate limit check ***
       violation |= rt_rate_limit_check(desired_torque, rt_torque_last, HYUNDAI_MAX_RT_DELTA);
 
@@ -321,6 +322,7 @@ static int hyundai_tx_hook(CANPacket_t *to_send, bool longitudinal_allowed) {
         rt_torque_last = desired_torque;
         ts_last = ts;
       }
+      #endif
     }
 
     // no torque if controls is not allowed
